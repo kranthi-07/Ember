@@ -1,69 +1,238 @@
-import Image from "next/image";
+"use client";
+
+import * as React from "react";
+import { Search, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { AIStatusIndicator } from "@/components/ai/ai-status";
+import { PreferenceChip } from "@/components/ai/preference-chip";
+import { RecommendationGrid } from "@/components/menu/recommendation-grid";
+import { FloatingCart } from "@/components/cart/floating-cart";
+import { CartPanel } from "@/components/cart/cart-panel";
+import { UserPreferences, MenuItem } from "@/types";
+import { getMatchingMenuItems, calculateCartTotal } from "@/lib/match-utils";
+import { menuData } from "@/lib/menu-data";
 
 export default function Home() {
+  const [query, setQuery] = React.useState("");
+  const [status, setStatus] = React.useState<"idle" | "loading" | "success" | "error">("idle");
+  const [preferences, setPreferences] = React.useState<UserPreferences | null>(null);
+  const [matches, setMatches] = React.useState<MenuItem[]>([]);
+  
+  // Cart State
+  const [cart, setCart] = React.useState<{ item: MenuItem; quantity: number }[]>([]);
+  const [isCartOpen, setIsCartOpen] = React.useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!query.trim()) return;
+
+    // Phase 9: Dismiss mobile keyboard for the screen recording
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+
+    setStatus("loading");
+    setPreferences(null);
+    setMatches([]);
+
+    try {
+      const res = await fetch("/api/ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: query }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to process");
+      }
+
+      const parsedPrefs: UserPreferences = await res.json();
+      setPreferences(parsedPrefs);
+      
+      const results = getMatchingMenuItems(parsedPrefs, menuData);
+      setMatches(results);
+      setStatus("success");
+    } catch (error) {
+      console.error("Error:", error);
+      setStatus("error");
+    }
+  };
+
+  const handleReset = () => {
+    setStatus("idle");
+    setQuery("");
+    setPreferences(null);
+    setMatches([]);
+  };
+
+  // Cart Handlers
+  const handleAddToCart = (item: MenuItem) => {
+    setCart(prev => {
+      const existing = prev.find(c => c.item.id === item.id);
+      if (existing) {
+        return prev.map(c => c.item.id === item.id ? { ...c, quantity: c.quantity + 1 } : c);
+      }
+      return [...prev, { item, quantity: 1 }];
+    });
+  };
+
+  const handleDecrease = (item: MenuItem) => {
+    setCart(prev => {
+      const existing = prev.find(c => c.item.id === item.id);
+      if (existing && existing.quantity > 1) {
+        return prev.map(c => c.item.id === item.id ? { ...c, quantity: c.quantity - 1 } : c);
+      }
+      return prev.filter(c => c.item.id !== item.id);
+    });
+  };
+
+  const cartItemCount = cart.reduce((acc, curr) => acc + curr.quantity, 0);
+  const cartTotal = calculateCartTotal(cart);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main className="min-h-screen bg-background flex flex-col selection:bg-ember-accent/20 pb-24">
+      {/* Header */}
+      <header className="w-full px-6 py-6 flex justify-between items-center bg-background/80 backdrop-blur-md sticky top-0 z-50">
+        <div className="font-serif text-2xl font-bold tracking-tight text-foreground cursor-pointer" onClick={handleReset}>
+          EMBER
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
+      </header>
+
+      {/* Main Content */}
+      <section className="flex-1 flex flex-col px-6 py-8 md:py-16 max-w-2xl mx-auto w-full">
+        
+        {/* Hero Text */}
+        <AnimatePresence>
+          {status === "idle" && (
+            <motion.div 
+              initial={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0, overflow: "hidden" }}
+              transition={{ duration: 0.3 }}
+              className="text-center space-y-6 mb-12 w-full"
+            >
+              <h1 className="font-serif text-4xl md:text-5xl font-medium tracking-tight text-foreground">
+                Find exactly what <br className="md:hidden" />
+                you&apos;re craving.
+              </h1>
+              <p className="text-ember-text-secondary text-base md:text-lg max-w-md mx-auto">
+                Tell us what you want. We&apos;ll find it.
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Search Input Area */}
+        <motion.div 
+          layout
+          className="w-full relative shadow-float rounded-xl bg-ember-surface p-2 transition-all duration-300 focus-within:ring-2 focus-within:ring-ember-accent/50 focus-within:shadow-xl z-10"
+        >
+          <form onSubmit={handleSubmit} className="flex relative">
+            <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-ember-text-secondary">
+              <Search className="h-5 w-5" />
+            </div>
+            <Input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              disabled={status === "loading"}
+              autoFocus
+              placeholder="Try: spicy dinner for two under ₹800"
+              className="pl-12 h-14 md:h-16 text-base md:text-lg border-0 shadow-none focus-visible:ring-0 bg-transparent disabled:opacity-50"
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+            
+            <div className="absolute inset-y-0 right-2 flex items-center gap-2">
+              {status !== "idle" && (
+                 <Button 
+                   type="button" 
+                   variant="ghost" 
+                   size="icon" 
+                   onClick={handleReset}
+                   className="h-10 w-10 text-ember-text-secondary hover:text-foreground"
+                 >
+                   <X className="h-5 w-5" />
+                 </Button>
+              )}
+              <Button 
+                type="submit" 
+                size="sm"
+                disabled={status === "loading" || !query.trim()}
+                className="h-10 md:h-12 px-6 rounded-lg bg-ember-accent hover:bg-ember-accent/90 text-white font-medium shadow-sm transition-all active:scale-95 disabled:opacity-50"
+              >
+                Find
+              </Button>
+            </div>
+          </form>
+        </motion.div>
+
+        {/* AI Loading State */}
+        <AnimatePresence>
+          {status === "loading" && (
+            <motion.div layout>
+              <AIStatusIndicator />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Success / Error / Empty States */}
+        <AnimatePresence>
+          {status !== "idle" && status !== "loading" && (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.1 }}
+              className="mt-8 flex flex-col gap-8 w-full"
+            >
+              {/* Preferences Container (Only on success) */}
+              {status === "success" && preferences && (
+                <div className="flex flex-wrap gap-2">
+                  {preferences.spicy === true && <PreferenceChip label="Spicy" icon="🌶" />}
+                  {preferences.vegetarian === true && <PreferenceChip label="Vegetarian" icon="🥬" />}
+                  {(preferences.servings ?? 0) > 0 && <PreferenceChip label={`${preferences.servings} People`} icon="👥" />}
+                  {(preferences.maxPrice ?? 0) > 0 && <PreferenceChip label={`Max ₹${preferences.maxPrice}`} icon="🏷" />}
+                  {preferences.categories.map(c => (
+                    <PreferenceChip key={c} label={c} />
+                  ))}
+                  {preferences.preferences.map(p => (
+                    <PreferenceChip key={p} label={p} />
+                  ))}
+                </div>
+              )}
+
+              {/* Recommendations Area */}
+              <div className="pt-4 border-t border-ember-border">
+                {status === "success" && matches.length > 0 && (
+                  <h2 className="font-serif text-xl font-medium mb-6">Made for your craving</h2>
+                )}
+                <RecommendationGrid 
+                  items={matches}
+                  cart={cart}
+                  status={status} 
+                  onAdd={handleAddToCart}
+                  onIncrease={handleAddToCart}
+                  onDecrease={handleDecrease}
+                  onRetry={handleReset} 
+                />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+      </section>
+      
+      {/* Sticky Bottom Cart */}
+      <FloatingCart itemCount={cartItemCount} total={cartTotal} onClick={() => setIsCartOpen(true)} />
+
+      {/* Slide up Cart Page */}
+      <CartPanel 
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
+        cart={cart}
+        total={cartTotal}
+        onIncrease={handleAddToCart}
+        onDecrease={handleDecrease}
+      />
+    </main>
   );
 }
