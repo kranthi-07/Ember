@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Search, X } from "lucide-react";
+import { Search, X, Loader2, Utensils, Leaf, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -92,11 +92,26 @@ export default function Home() {
   const cartTotal = calculateCartTotal(cart);
 
   return (
-    <main className="min-h-screen bg-background flex flex-col selection:bg-ember-accent/20 pb-24">
+    <main className="min-h-screen bg-background flex flex-col selection:bg-ember-accent/20 pb-24 relative overflow-hidden">
+      
+      {/* Decorative Background Elements */}
+      <div className="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-ember-accent/10 blur-[100px] pointer-events-none -z-10" />
+      <div className="fixed bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-orange-500/5 blur-[100px] pointer-events-none -z-10" />
+      <div className="fixed inset-0 bg-[url('https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Tandoorimumbai.jpg/800px-Tandoorimumbai.jpg')] bg-cover bg-center opacity-[0.02] pointer-events-none -z-20 mix-blend-luminosity" />
+
       {/* Header */}
-      <header className="w-full px-6 py-6 flex justify-between items-center bg-background/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="font-serif text-2xl font-bold tracking-tight text-foreground cursor-pointer" onClick={handleReset}>
-          EMBER
+      <header className="w-full px-6 py-6 flex justify-between items-center bg-background/80 backdrop-blur-md sticky top-0 z-50 border-b border-ember-border/50">
+        <div className="flex items-baseline gap-3 cursor-pointer" onClick={handleReset}>
+          <div className="font-serif text-2xl font-bold tracking-tight text-foreground">
+            EMBER
+          </div>
+          <div className="text-[10px] font-bold tracking-widest uppercase flex items-center">
+            <span className="text-ember-text-secondary mr-1">by</span>
+            <span className="text-orange-500">e</span>
+            <span className="text-orange-500">x</span>
+            <span className="text-orange-500">p</span>
+            <span className="text-foreground ml-1">studio</span>
+          </div>
         </div>
       </header>
 
@@ -110,14 +125,24 @@ export default function Home() {
               initial={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0, overflow: "hidden" }}
               transition={{ duration: 0.3 }}
-              className="text-center space-y-6 mb-12 w-full"
+              className="text-center space-y-6 mb-12 w-full pt-8 relative"
             >
+              {/* Decorative Borders */}
+              <Leaf className="absolute top-0 left-4 md:left-12 w-6 h-6 text-ember-accent/30 -rotate-45" />
+              <Leaf className="absolute bottom-4 right-4 md:right-12 w-8 h-8 text-ember-accent/20 rotate-45 scale-x-[-1]" />
+              <Sparkles className="absolute top-1/4 right-8 w-5 h-5 text-orange-400/40" />
+              <Sparkles className="absolute bottom-1/4 left-10 w-4 h-4 text-orange-400/40" />
+
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-ember-accent/10 text-ember-accent text-xs font-bold tracking-widest uppercase mb-2 border border-ember-accent/20 shadow-sm">
+                <Utensils className="w-3.5 h-3.5" />
+                <span>Premium Indian Cuisine</span>
+              </div>
               <h1 className="font-serif text-4xl md:text-5xl font-medium tracking-tight text-foreground">
                 Find exactly what <br className="md:hidden" />
                 you&apos;re craving.
               </h1>
-              <p className="text-ember-text-secondary text-base md:text-lg max-w-md mx-auto">
-                Tell us what you want. We&apos;ll find it.
+              <p className="text-ember-text-secondary text-base md:text-lg max-w-md mx-auto leading-relaxed">
+                Experience culinary perfection. Tell us what you want, and we&apos;ll curate the perfect dish.
               </p>
             </motion.div>
           )}

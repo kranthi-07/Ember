@@ -40,6 +40,8 @@ Your job is to understand natural language food requests and output ONLY valid J
 Extract dietary needs, price limits, servings, menu categories (Starters, Main Course, Rice, Breads, Desserts, Drinks), and flavor keywords.
 
 Rules:
+- FIX TYPOS: If the user misspells a food name (e.g. "paneeer", "chiken", "briyani"), correct it to the proper spelling before adding it to preferences!
+- PRICE: If they mention a price (e.g. "under 400", "for 400", "max 400"), you MUST extract that number into maxPrice.
 - DO NOT hallucinate or invent numbers. If a price limit or serving size is not explicitly mentioned by the user, you MUST return null for maxPrice and servings.
 - Categories MUST perfectly match the defined list if mentioned.
 - Keywords should go into the "preferences" array (e.g. "light", "chicken", "refreshing"). ALWAYS extract the main ingredient/food name they typed and put it in preferences!
@@ -76,7 +78,7 @@ User Request: "${prompt}"`,
     const rawData = JSON.parse(response.text);
     const validatedData = userPreferencesSchema.parse(rawData);
 
-    // Fallback: If AI extracted nothing at all, use their exact query as a keyword
+    // Fallback: If AI extracted nothing at all, use their exact query as keywords
     const hasAnyFilter = 
       validatedData.spicy !== null || 
       validatedData.vegetarian !== null || 
@@ -85,21 +87,26 @@ User Request: "${prompt}"`,
       validatedData.preferences.length > 0;
       
     if (!hasAnyFilter && prompt.trim().length > 0) {
-       validatedData.preferences = [prompt.trim()];
+      const stopWords = ["under", "for", "with", "a", "an", "the", "and", "in", "of", "to", "i", "want"];
+      const words = prompt.toLowerCase().split(/\s+/).filter(w => !stopWords.includes(w) && w.length > 2);
+      validatedData.preferences = words.length > 0 ? words : [prompt.trim()];
     }
 
     return NextResponse.json(validatedData);
   } catch (error) {
     console.warn("AI Route Error/Timeout, falling back to local parser:", error);
     
-    // PHASE 8: Lightweight local fallback parser
+    // PHASE 8: Smarter local fallback parser
+    const stopWords = ["under", "for", "with", "a", "an", "the", "and", "in", "of", "to", "i", "want"];
+    const words = prompt.toLowerCase().split(/\s+/).filter(w => !stopWords.includes(w) && w.length > 2);
+    
     const fallbackData = {
       spicy: prompt.toLowerCase().includes("spicy") ? true : null,
       vegetarian: prompt.toLowerCase().includes("veg") ? true : null,
       maxPrice: null,
       servings: null,
       categories: [],
-      preferences: prompt.trim() ? [prompt.trim()] : []
+      preferences: words
     };
 
     return NextResponse.json(fallbackData);

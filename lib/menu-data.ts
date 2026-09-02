@@ -13,7 +13,8 @@ export const menuData: MenuItem[] = [
     cuisine: "North Indian",
     servingSize: 1,
     tags: ["Street Food", "Tangy"],
-    ingredients: ["Potatoes", "Peas", "Pastry", "Yogurt", "Tamarind", "Mint"]
+    ingredients: ["Potatoes", "Peas", "Pastry", "Yogurt", "Tamarind", "Mint"],
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Samosas%2C_snack_food_at_Wikipedia%27s_16th_Birthday_celebration_in_Chittagong_%2801%29.jpg/960px-Samosas%2C_snack_food_at_Wikipedia%27s_16th_Birthday_celebration_in_Chittagong_%2801%29.jpg"
   },
   {
     id: "s2",
@@ -26,7 +27,8 @@ export const menuData: MenuItem[] = [
     cuisine: "North Indian",
     servingSize: 2,
     tags: ["High Protein", "Tandoori"],
-    ingredients: ["Chicken breast", "Yogurt", "Ginger", "Garlic", "Chili powder"]
+    ingredients: ["Chicken breast", "Yogurt", "Ginger", "Garlic", "Chili powder"],
+    image: "https://upload.wikimedia.org/wikipedia/commons/b/bd/Tandoorimumbai.jpg"
   },
   {
     id: "s3",
@@ -54,7 +56,8 @@ export const menuData: MenuItem[] = [
     cuisine: "North Indian",
     servingSize: 2,
     tags: ["Creamy", "Popular"],
-    ingredients: ["Chicken", "Tomatoes", "Butter", "Cream", "Kasuri Methi"]
+    ingredients: ["Chicken", "Tomatoes", "Butter", "Cream", "Kasuri Methi"],
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Butter_Chicken_%26_Butter_Naan_-_Home_-_Chandigarh_-_India_-_0006.jpg/960px-Butter_Chicken_%26_Butter_Naan_-_Home_-_Chandigarh_-_India_-_0006.jpg"
   },
   {
     id: "m2",
@@ -67,7 +70,8 @@ export const menuData: MenuItem[] = [
     cuisine: "North Indian",
     servingSize: 2,
     tags: ["Healthy", "Greens"],
-    ingredients: ["Paneer", "Spinach", "Garlic", "Cream", "Garam Masala"]
+    ingredients: ["Paneer", "Spinach", "Garlic", "Cream", "Garam Masala"],
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Palakpaneer_Rayagada_Odisha_0009.jpg/960px-Palakpaneer_Rayagada_Odisha_0009.jpg"
   },
   {
     id: "m3",
@@ -80,7 +84,8 @@ export const menuData: MenuItem[] = [
     cuisine: "Kashmiri",
     servingSize: 2,
     tags: ["Rich", "Slow-cooked"],
-    ingredients: ["Lamb", "Kashmiri Chili", "Fennel", "Yogurt", "Ginger"]
+    ingredients: ["Lamb", "Kashmiri Chili", "Fennel", "Yogurt", "Ginger"],
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/Rogan_Josh_Kashmiri.jpg/960px-Rogan_Josh_Kashmiri.jpg"
   },
   {
     id: "m4",
@@ -93,7 +98,8 @@ export const menuData: MenuItem[] = [
     cuisine: "North Indian",
     servingSize: 2,
     tags: ["Comfort Food", "Creamy"],
-    ingredients: ["Black Lentils", "Kidney Beans", "Butter", "Cream", "Tomatoes"]
+    ingredients: ["Black Lentils", "Kidney Beans", "Butter", "Cream", "Tomatoes"],
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Punjabi_style_Dal_Makhani.jpg/960px-Punjabi_style_Dal_Makhani.jpg"
   },
   {
     id: "m5",
@@ -106,7 +112,8 @@ export const menuData: MenuItem[] = [
     cuisine: "South Indian",
     servingSize: 2,
     tags: ["Fiery", "Aromatic"],
-    ingredients: ["Chicken", "Coconut", "Black Pepper", "Star Anise", "Curry Leaves"]
+    ingredients: ["Chicken", "Coconut", "Black Pepper", "Star Anise", "Curry Leaves"],
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Chettinad_Chicken_Fry-Home-AndhraPradesh-005.jpg/960px-Chettinad_Chicken_Fry-Home-AndhraPradesh-005.jpg"
   },
 
   // Rice
@@ -121,7 +128,8 @@ export const menuData: MenuItem[] = [
     cuisine: "Hyderabadi",
     servingSize: 2,
     tags: ["Aromatic", "Popular"],
-    ingredients: ["Basmati Rice", "Chicken", "Saffron", "Fried Onions", "Mint"]
+    ingredients: ["Basmati Rice", "Chicken", "Saffron", "Fried Onions", "Mint"],
+    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/%22Hyderabadi_Dum_Biryani%22.jpg/960px-%22Hyderabadi_Dum_Biryani%22.jpg"
   },
   {
     id: "r2",
@@ -147,7 +155,8 @@ export const menuData: MenuItem[] = [
     cuisine: "North Indian",
     servingSize: 2,
     tags: ["Light", "Healthy"],
-    ingredients: ["Basmati Rice", "Carrots", "Peas", "Beans", "Spices"]
+    ingredients: ["Basmati Rice", "Carrots", "Peas", "Beans", "Spices"],
+    image: "https://upload.wikimedia.org/wikipedia/commons/d/dd/Afghan_Palo.jpg"
   },
 
   // Breads
@@ -231,7 +240,8 @@ export const menuData: MenuItem[] = [
     cuisine: "North Indian",
     servingSize: 1,
     tags: ["Refreshing", "Sweet"],
-    ingredients: ["Yogurt", "Mango pulp", "Sugar", "Cardamom"]
+    ingredients: ["Yogurt", "Mango pulp", "Sugar", "Cardamom"],
+    image: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=800&q=80"
   },
   {
     id: "dr2",
@@ -244,6 +254,7 @@ export const menuData: MenuItem[] = [
     cuisine: "Indian",
     servingSize: 1,
     tags: ["Hot", "Spiced"],
-    ingredients: ["Black Tea", "Milk", "Ginger", "Cardamom", "Sugar"]
+    ingredients: ["Black Tea", "Milk", "Ginger", "Cardamom", "Sugar"],
+    image: "https://images.unsplash.com/photo-1561336313-0bd5e0b27ec8?auto=format&fit=crop&w=800&q=80"
   }
 ];
