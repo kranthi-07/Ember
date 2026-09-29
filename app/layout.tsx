@@ -13,8 +13,8 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "EMBER | Find exactly what you're craving.",
-  description: "AI-native restaurant experience.",
+  title: "EMBER | Premium Indian Cuisine",
+  description: "Experience culinary perfection curated by AI.",
 };
 
 export default function RootLayout({
@@ -23,9 +23,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="scroll-smooth">
       <body
-        className={`${inter.variable} ${playfair.variable} antialiased selection:bg-ember-accent/20`}
+        className={`${inter.variable} ${playfair.variable} antialiased selection:bg-ember-accent/20 bg-background text-foreground`}
       >
         {children}
       </body>

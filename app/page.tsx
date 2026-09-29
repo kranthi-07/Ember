@@ -1,20 +1,26 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
-import { Search, X, Loader2, Utensils, Leaf, Sparkles } from "lucide-react";
+import { Search, X, Utensils, ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { AIStatusIndicator } from "@/components/ai/ai-status";
-import { PreferenceChip } from "@/components/ai/preference-chip";
+import { AIStatusIndicator } from "@/components/ui/ai-status-indicator";
+import { PreferenceChip } from "@/components/ui/preference-chip";
 import { RecommendationGrid } from "@/components/menu/recommendation-grid";
 import { FloatingCart } from "@/components/cart/floating-cart";
 import { CartPanel } from "@/components/cart/cart-panel";
 import { UserPreferences, MenuItem } from "@/types";
 import { getMatchingMenuItems, calculateCartTotal } from "@/lib/match-utils";
 import { menuData } from "@/lib/menu-data";
+import { Premium3DScene } from "@/components/3d/premium-scene";
+
+type View = "HUB" | "AI" | "MENU";
 
 export default function Home() {
+  const [view, setView] = React.useState<View>("HUB");
+
+  // AI State
   const [query, setQuery] = React.useState("");
   const [status, setStatus] = React.useState<"idle" | "loading" | "success" | "error">("idle");
   const [preferences, setPreferences] = React.useState<UserPreferences | null>(null);
@@ -28,7 +34,6 @@ export default function Home() {
     e.preventDefault();
     if (!query.trim()) return;
 
-    // Phase 9: Dismiss mobile keyboard for the screen recording
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();
     }
@@ -44,9 +49,7 @@ export default function Home() {
         body: JSON.stringify({ prompt: query }),
       });
 
-      if (!res.ok) {
-        throw new Error("Failed to process");
-      }
+      if (!res.ok) throw new Error("Failed to process");
 
       const parsedPrefs: UserPreferences = await res.json();
       setPreferences(parsedPrefs);
@@ -55,7 +58,6 @@ export default function Home() {
       setMatches(results);
       setStatus("success");
     } catch (error) {
-      console.error("Error:", error);
       setStatus("error");
     }
   };
@@ -67,7 +69,6 @@ export default function Home() {
     setMatches([]);
   };
 
-  // Cart Handlers
   const handleAddToCart = (item: MenuItem) => {
     setCart(prev => {
       const existing = prev.find(c => c.item.id === item.id);
@@ -77,6 +78,13 @@ export default function Home() {
       return [...prev, { item, quantity: 1 }];
     });
   };
+
+  // Bridge for 3D scene clicks
+  React.useEffect(() => {
+    const handleAddEvent = (e: CustomEvent<MenuItem>) => handleAddToCart(e.detail);
+    window.addEventListener('add-to-cart', handleAddEvent as EventListener);
+    return () => window.removeEventListener('add-to-cart', handleAddEvent as EventListener);
+  }, []);
 
   const handleDecrease = (item: MenuItem) => {
     setCart(prev => {
@@ -92,172 +100,208 @@ export default function Home() {
   const cartTotal = calculateCartTotal(cart);
 
   return (
-    <main className="min-h-screen bg-background flex flex-col selection:bg-ember-accent/20 pb-24 relative overflow-hidden">
+    <main className="h-screen w-full bg-zinc-950 overflow-hidden relative font-sans text-foreground selection:bg-ember-accent/20 [perspective:2000px]">
       
-      {/* Decorative Background Elements */}
-      <div className="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-ember-accent/10 blur-[100px] pointer-events-none -z-10" />
-      <div className="fixed bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-orange-500/5 blur-[100px] pointer-events-none -z-10" />
-      <div className="fixed inset-0 bg-[url('https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Tandoorimumbai.jpg/800px-Tandoorimumbai.jpg')] bg-cover bg-center opacity-[0.02] pointer-events-none -z-20 mix-blend-luminosity" />
+      {/* 3D Glass Torus Background & 3D Interactive Panels */}
+      <Premium3DScene view={view} />
 
-      {/* Header */}
-      <header className="w-full px-6 py-6 flex justify-between items-center bg-background/80 backdrop-blur-md sticky top-0 z-50 border-b border-ember-border/50">
-        <div className="flex items-baseline gap-3 cursor-pointer" onClick={handleReset}>
-          <div className="font-serif text-2xl font-bold tracking-tight text-foreground">
-            EMBER
-          </div>
-          <div className="text-[10px] font-bold tracking-widest uppercase flex items-center">
-            <span className="text-ember-text-secondary mr-1">by</span>
-            <span className="text-orange-500">e</span>
-            <span className="text-orange-500">x</span>
-            <span className="text-orange-500">p</span>
-            <span className="text-foreground ml-1">studio</span>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <section className="flex-1 flex flex-col px-6 py-8 md:py-16 max-w-2xl mx-auto w-full">
+      {/* Foreground UI Layer */}
+      <div className="absolute inset-0 pointer-events-none z-10 flex flex-col">
         
-        {/* Hero Text */}
-        <AnimatePresence>
-          {status === "idle" && (
-            <motion.div 
-              initial={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0, overflow: "hidden" }}
-              transition={{ duration: 0.3 }}
-              className="text-center space-y-6 mb-12 w-full pt-8 relative"
-            >
-              {/* Decorative Borders */}
-              <Leaf className="absolute top-0 left-4 md:left-12 w-6 h-6 text-ember-accent/30 -rotate-45" />
-              <Leaf className="absolute bottom-4 right-4 md:right-12 w-8 h-8 text-ember-accent/20 rotate-45 scale-x-[-1]" />
-              <Sparkles className="absolute top-1/4 right-8 w-5 h-5 text-orange-400/40" />
-              <Sparkles className="absolute bottom-1/4 left-10 w-4 h-4 text-orange-400/40" />
-
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-ember-accent/10 text-ember-accent text-xs font-bold tracking-widest uppercase mb-2 border border-ember-accent/20 shadow-sm">
-                <Utensils className="w-3.5 h-3.5" />
-                <span>Premium Indian Cuisine</span>
-              </div>
-              <h1 className="font-serif text-4xl md:text-5xl font-medium tracking-tight text-foreground">
-                Find exactly what <br className="md:hidden" />
-                you&apos;re craving.
-              </h1>
-              <p className="text-ember-text-secondary text-base md:text-lg max-w-md mx-auto leading-relaxed">
-                Experience culinary perfection. Tell us what you want, and we&apos;ll curate the perfect dish.
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Search Input Area */}
-        <motion.div 
-          layout
-          className="w-full relative shadow-float rounded-xl bg-ember-surface p-2 transition-all duration-300 focus-within:ring-2 focus-within:ring-ember-accent/50 focus-within:shadow-xl z-10"
-        >
-          <form onSubmit={handleSubmit} className="flex relative">
-            <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-ember-text-secondary">
-              <Search className="h-5 w-5" />
+        {/* Dynamic Header */}
+        <header className="w-full p-6 flex justify-between items-center pointer-events-auto">
+          <div className="flex items-center gap-4">
+            <AnimatePresence>
+              {view !== "HUB" && (
+                <motion.div
+                  initial={{ opacity: 0, rotateY: -90, x: -20 }}
+                  animate={{ opacity: 1, rotateY: 0, x: 0 }}
+                  exit={{ opacity: 0, rotateY: 90, x: -20 }}
+                  transition={{ duration: 0.5, ease: "easeOut" }}
+                >
+                  <Button variant="ghost" size="icon" onClick={() => setView("HUB")} className="rounded-full bg-black/50 backdrop-blur hover:bg-white/10 text-white">
+                    <ArrowLeft className="w-5 h-5" />
+                  </Button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+            <div className="font-serif text-2xl font-bold tracking-widest text-white cursor-pointer drop-shadow-md hover:scale-105 transition-transform" onClick={() => setView("HUB")}>
+              EMBER
             </div>
-            <Input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              disabled={status === "loading"}
-              autoFocus
-              placeholder="Try: spicy dinner for two under ₹800"
-              className="pl-12 h-14 md:h-16 text-base md:text-lg border-0 shadow-none focus-visible:ring-0 bg-transparent disabled:opacity-50"
-            />
+          </div>
+          
+          {view === "HUB" && (
+            <div className="text-[10px] font-bold tracking-widest uppercase flex items-center px-3 py-1 bg-white/5 rounded-full backdrop-blur-md">
+              <span className="text-white/50 mr-1">by</span>
+              <span className="text-orange-500">e</span>
+              <span className="text-white">x</span>
+              <span className="text-orange-500">p</span>
+              <span className="text-white ml-1">studio</span>
+            </div>
+          )}
+        </header>
+
+        {/* View Transitions */}
+        <div className="flex-1 relative [transform-style:preserve-3d]">
+          <AnimatePresence mode="wait">
             
-            <div className="absolute inset-y-0 right-2 flex items-center gap-2">
-              {status !== "idle" && (
-                 <Button 
-                   type="button" 
-                   variant="ghost" 
-                   size="icon" 
-                   onClick={handleReset}
-                   className="h-10 w-10 text-ember-text-secondary hover:text-foreground"
-                 >
-                   <X className="h-5 w-5" />
-                 </Button>
-              )}
-              <Button 
-                type="submit" 
-                size="sm"
-                disabled={status === "loading" || !query.trim()}
-                className="h-10 md:h-12 px-6 rounded-lg bg-ember-accent hover:bg-ember-accent/90 text-white font-medium shadow-sm transition-all active:scale-95 disabled:opacity-50"
+            {/* HUB VIEW */}
+            {view === "HUB" && (
+              <motion.div 
+                key="hub"
+                initial={{ opacity: 0, scale: 0.8, rotateX: 20 }}
+                animate={{ opacity: 1, scale: 1, rotateX: 0 }}
+                exit={{ opacity: 0, scale: 1.2, rotateX: -20 }}
+                transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+                className="absolute inset-0 flex flex-col items-center justify-end pb-24 md:pb-32 pointer-events-auto"
               >
-                Find
-              </Button>
-            </div>
-          </form>
-        </motion.div>
-
-        {/* AI Loading State */}
-        <AnimatePresence>
-          {status === "loading" && (
-            <motion.div layout>
-              <AIStatusIndicator />
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Success / Error / Empty States */}
-        <AnimatePresence>
-          {status !== "idle" && status !== "loading" && (
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.1 }}
-              className="mt-8 flex flex-col gap-8 w-full"
-            >
-              {/* Preferences Container (Only on success) */}
-              {status === "success" && preferences && (
-                <div className="flex flex-wrap gap-2">
-                  {preferences.spicy === true && <PreferenceChip label="Spicy" icon="🌶" />}
-                  {preferences.vegetarian === true && <PreferenceChip label="Vegetarian" icon="🥬" />}
-                  {(preferences.servings ?? 0) > 0 && <PreferenceChip label={`${preferences.servings} People`} icon="👥" />}
-                  {(preferences.maxPrice ?? 0) > 0 && <PreferenceChip label={`Max ₹${preferences.maxPrice}`} icon="🏷" />}
-                  {preferences.categories.map(c => (
-                    <PreferenceChip key={c} label={c} />
-                  ))}
-                  {preferences.preferences.map(p => (
-                    <PreferenceChip key={p} label={p} />
-                  ))}
+                <div className="text-center space-y-6 mb-12">
+                  <h1 className="font-serif text-4xl md:text-6xl font-light tracking-tight text-white drop-shadow-2xl">
+                    What are you craving?
+                  </h1>
                 </div>
-              )}
+                
+                <div className="flex flex-col sm:flex-row gap-6 px-6 w-full max-w-lg [perspective:1000px]">
+                  <motion.div whileHover={{ rotateX: 10, rotateY: -10, scale: 1.05 }} className="flex-1">
+                    <Button 
+                      onClick={() => setView("AI")}
+                      className="w-full h-16 rounded-2xl bg-white/10 hover:bg-white/20 backdrop-blur-xl border border-white/10 text-white font-medium tracking-widest uppercase text-xs shadow-2xl"
+                    >
+                      Ask AI Sommelier
+                    </Button>
+                  </motion.div>
+                  <motion.div whileHover={{ rotateX: 10, rotateY: 10, scale: 1.05 }} className="flex-1">
+                    <Button 
+                      onClick={() => setView("MENU")}
+                      className="w-full h-16 rounded-2xl bg-ember-accent hover:bg-ember-accent/90 text-white font-medium tracking-widest uppercase text-xs shadow-xl shadow-ember-accent/20"
+                    >
+                      View Classic Menu
+                    </Button>
+                  </motion.div>
+                </div>
+              </motion.div>
+            )}
 
-              {/* Recommendations Area */}
-              <div className="pt-4 border-t border-ember-border">
-                {status === "success" && matches.length > 0 && (
-                  <h2 className="font-serif text-xl font-medium mb-6">Made for your craving</h2>
-                )}
-                <RecommendationGrid 
-                  items={matches}
-                  cart={cart}
-                  status={status} 
-                  onAdd={handleAddToCart}
-                  onIncrease={handleAddToCart}
-                  onDecrease={handleDecrease}
-                  onRetry={handleReset} 
-                />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            {/* AI CONCIERGE VIEW */}
+            {view === "AI" && (
+              <motion.div 
+                key="ai"
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                className="absolute inset-0 m-auto w-full max-w-[600px] h-[80vh] max-h-[800px] bg-black/40 backdrop-blur-lg border border-white/10 rounded-[2.5rem] p-8 md:p-12 overflow-y-auto pointer-events-auto shadow-[0_0_80px_rgba(0,0,0,0.8)] [transform-origin:center]"
+              >
+                <div className="max-w-md mx-auto space-y-8 pb-32">
+                  <div>
+                    <span className="text-ember-accent font-bold tracking-widest uppercase text-xs mb-2 block">
+                      AI Sommelier
+                    </span>
+                    <h2 className="font-serif text-3xl text-white font-medium">Curate your meal</h2>
+                  </div>
 
-      </section>
-      
-      {/* Sticky Bottom Cart */}
-      <FloatingCart itemCount={cartItemCount} total={cartTotal} onClick={() => setIsCartOpen(true)} />
+                  {/* AI Search */}
+                  <motion.div whileHover={{ scale: 1.02, rotateX: 5 }} className="w-full relative shadow-2xl rounded-2xl bg-white/5 border border-white/10 p-2 focus-within:ring-2 focus-within:ring-ember-accent/50 transition-all">
+                    <form onSubmit={handleSubmit} className="flex relative">
+                      <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-white/50">
+                        <Search className="h-5 w-5" />
+                      </div>
+                      <Input
+                        type="text"
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        disabled={status === "loading"}
+                        placeholder="Try: spicy dinner for two under Rs. 800"
+                        className="pl-12 h-14 text-base border-0 shadow-none focus-visible:ring-0 bg-transparent text-white placeholder:text-white/30 disabled:opacity-50"
+                      />
+                      
+                      <div className="absolute inset-y-0 right-2 flex items-center gap-2">
+                        {status !== "idle" && (
+                           <Button type="button" variant="ghost" size="icon" onClick={handleReset} className="h-10 w-10 text-white/50 hover:text-white hover:bg-white/10">
+                             <X className="h-4 w-4" />
+                           </Button>
+                        )}
+                        <Button type="submit" size="sm" disabled={status === "loading" || !query.trim()} className="h-10 px-4 rounded-xl bg-ember-accent hover:bg-ember-accent/90 text-white font-medium shadow-sm transition-all active:scale-95 disabled:opacity-50">
+                          Find
+                        </Button>
+                      </div>
+                    </form>
+                  </motion.div>
 
-      {/* Slide up Cart Page */}
-      <CartPanel 
-        isOpen={isCartOpen}
-        onClose={() => setIsCartOpen(false)}
-        cart={cart}
-        total={cartTotal}
-        onIncrease={handleAddToCart}
-        onDecrease={handleDecrease}
-      />
+                  {/* AI Loading State */}
+                  <AnimatePresence>
+                    {status === "loading" && (
+                      <motion.div initial={{ opacity: 0, rotateX: -90 }} animate={{ opacity: 1, rotateX: 0 }} exit={{ opacity: 0, rotateX: 90 }}>
+                        <AIStatusIndicator />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Success Results */}
+                  <AnimatePresence>
+                    {status !== "idle" && status !== "loading" && (
+                      <motion.div initial={{ opacity: 0, y: 20, z: -50 }} animate={{ opacity: 1, y: 0, z: 0 }} className="flex flex-col gap-8 w-full">
+                        {status === "success" && preferences && (
+                          <div className="flex flex-wrap gap-2">
+                            {preferences.spicy === true && <PreferenceChip label="Spicy" />}
+                            {preferences.vegetarian === true && <PreferenceChip label="Vegetarian" />}
+                            {(preferences.maxPrice ?? 0) > 0 && <PreferenceChip label={`Max ₹${preferences.maxPrice}`} />}
+                          </div>
+                        )}
+                        <div className="pt-4 border-t border-white/10">
+                          {status === "success" && matches.length > 0 && (
+                            <h2 className="font-serif text-xl font-medium mb-6 text-white">Recommendations</h2>
+                          )}
+                          <RecommendationGrid 
+                            items={matches} cart={cart} status={status} 
+                            onAdd={handleAddToCart} onIncrease={handleAddToCart} onDecrease={handleDecrease} onRetry={handleReset} 
+                          />
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </motion.div>
+            )}
+
+            {/* CLASSIC MENU VIEW (3D Overlay) */}
+            {view === "MENU" && (
+              <motion.div 
+                key="menu"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.8 }}
+                className="absolute inset-0 pointer-events-none flex flex-col justify-end items-center pb-32"
+              >
+                <div className="bg-black/50 backdrop-blur-md px-6 py-3 rounded-full border border-white/10 shadow-2xl">
+                   <p className="text-white/70 font-medium tracking-widest text-xs uppercase animate-pulse">
+                     Drag to explore the universe | Scroll to zoom
+                   </p>
+                </div>
+              </motion.div>
+            )}
+            
+          </AnimatePresence>
+        </div>
+      </div>
+
+      {/* Sticky Bottom Cart (Global) */}
+      <div className="pointer-events-auto relative z-50">
+        <FloatingCart itemCount={cartItemCount} total={cartTotal} onClick={() => setIsCartOpen(true)} />
+        <CartPanel 
+          isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} cart={cart} total={cartTotal}
+          onIncrease={handleAddToCart} onDecrease={handleDecrease}
+        />
+      </div>
     </main>
   );
 }
+
+
+
+
+
+
+
+
