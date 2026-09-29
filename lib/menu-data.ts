@@ -1,4 +1,4 @@
-import { MenuItem } from "@/types";
+﻿import { MenuItem } from "@/types";
 
 export const menuData: MenuItem[] = [
   // Starters
@@ -41,7 +41,8 @@ export const menuData: MenuItem[] = [
     cuisine: "South Indian",
     servingSize: 2,
     tags: ["Crispy", "Spicy"],
-    ingredients: ["Paneer", "Rice flour", "Curry leaves", "Green chilies", "Spices"]
+    ingredients: ["Paneer", "Rice flour", "Curry leaves", "Green chilies", "Spices"],
+    image: "https://images.unsplash.com/photo-1631515243349-e0cb75fb8d3a?auto=format&fit=crop&w=800&q=80"
   },
   
   // Main Course
@@ -142,7 +143,8 @@ export const menuData: MenuItem[] = [
     cuisine: "North Indian",
     servingSize: 2,
     tags: ["Mild", "Accompaniment"],
-    ingredients: ["Basmati Rice", "Cumin seeds", "Ghee"]
+    ingredients: ["Basmati Rice", "Cumin seeds", "Ghee"],
+    image: "https://images.unsplash.com/photo-1596797038530-2c107229654b?auto=format&fit=crop&w=800&q=80"
   },
   {
     id: "r3",
@@ -171,7 +173,8 @@ export const menuData: MenuItem[] = [
     cuisine: "North Indian",
     servingSize: 1,
     tags: ["Popular", "Buttery"],
-    ingredients: ["Refined flour", "Garlic", "Butter", "Yeast"]
+    ingredients: ["Refined flour", "Garlic", "Butter", "Yeast"],
+    image: "https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=800&q=80"
   },
   {
     id: "b2",
@@ -184,7 +187,8 @@ export const menuData: MenuItem[] = [
     cuisine: "North Indian",
     servingSize: 1,
     tags: ["Healthy", "Staple"],
-    ingredients: ["Whole wheat flour", "Water"]
+    ingredients: ["Whole wheat flour", "Water"],
+    image: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=800&q=80"
   },
   {
     id: "b3",
@@ -197,7 +201,8 @@ export const menuData: MenuItem[] = [
     cuisine: "North Indian",
     servingSize: 1,
     tags: ["Flaky"],
-    ingredients: ["Whole wheat flour", "Ghee"]
+    ingredients: ["Whole wheat flour", "Ghee"],
+    image: "https://images.unsplash.com/photo-1605333396914-2c26c1170753?auto=format&fit=crop&w=800&q=80"
   },
 
   // Desserts
@@ -212,7 +217,8 @@ export const menuData: MenuItem[] = [
     cuisine: "North Indian",
     servingSize: 1,
     tags: ["Sweet", "Warm"],
-    ingredients: ["Milk solids", "Sugar", "Cardamom", "Rose water"]
+    ingredients: ["Milk solids", "Sugar", "Cardamom", "Rose water"],
+    image: "https://images.unsplash.com/photo-1589116744865-c32f831b876a?auto=format&fit=crop&w=800&q=80"
   },
   {
     id: "d2",
@@ -225,7 +231,8 @@ export const menuData: MenuItem[] = [
     cuisine: "East Indian",
     servingSize: 1,
     tags: ["Sweet", "Chilled"],
-    ingredients: ["Paneer", "Milk", "Sugar", "Saffron", "Pistachios"]
+    ingredients: ["Paneer", "Milk", "Sugar", "Saffron", "Pistachios"],
+    image: "https://images.unsplash.com/photo-1630175860333-5131bda75071?auto=format&fit=crop&w=800&q=80"
   },
 
   // Drinks
@@ -258,3 +265,4 @@ export const menuData: MenuItem[] = [
     image: "https://images.unsplash.com/photo-1561336313-0bd5e0b27ec8?auto=format&fit=crop&w=800&q=80"
   }
 ];
+

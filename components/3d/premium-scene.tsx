@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import * as React from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
@@ -113,6 +113,23 @@ function MenuUniverse({ onFilteringChange }: { onFilteringChange: (isFiltering: 
   );
 }
 
+function CameraRig({ view }: { view: "HUB" | "AI" | "MENU" }) {
+  useFrame((state, delta) => {
+    if (view !== "MENU") {
+      // Smoothly animate camera back to default position
+      state.camera.position.lerp(new THREE.Vector3(0, 0, 8), delta * 3);
+      
+      // Smoothly animate camera rotation to look at center
+      const targetLook = new THREE.Vector3(0, 0, 0);
+      const targetRotation = new THREE.Quaternion().setFromRotationMatrix(
+        new THREE.Matrix4().lookAt(state.camera.position, targetLook, state.camera.up)
+      );
+      state.camera.quaternion.slerp(targetRotation, delta * 3);
+    }
+  });
+  return null;
+}
+
 export function Premium3DScene({ view }: { view: "HUB" | "AI" | "MENU" }) {
   const isInteractive = view === "MENU";
   const [isFilteringMenu, setIsFilteringMenu] = React.useState(false);
@@ -121,6 +138,8 @@ export function Premium3DScene({ view }: { view: "HUB" | "AI" | "MENU" }) {
     <div className={`absolute inset-0 z-0 ${isInteractive ? "pointer-events-auto" : "pointer-events-none"}`}>
       <Canvas camera={{ position: [0, 0, 8], fov: 45 }}>
         <color attach="background" args={['#000000']} />
+        
+        <CameraRig view={view} />
         
         {view === "MENU" && (
           <>
