@@ -1,16 +1,16 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { MeshTransmissionMaterial, Float, Environment, Lightformer, Html, OrbitControls, Stars } from "@react-three/drei";
 import * as THREE from "three";
 import { menuData } from "@/lib/menu-data";
-import { Search, X, Loader2 } from "lucide-react";
-import { PreferenceChip } from "@/components/ui/preference-chip";
-import { AIStatusIndicator } from "@/components/ui/ai-status-indicator";
+import { Search, X } from "lucide-react";
+import { usePremiumSounds } from "@/lib/use-sound";
 
-function GlassTorus({ view, isFiltering }: { view: "HUB" | "AI" | "MENU", isFiltering: boolean }) {
+function GlassTorus({ view, isFiltering, themeColor }: { view: "HUB" | "AI" | "MENU", isFiltering: boolean, themeColor: string }) {
   const mesh = React.useRef<THREE.Mesh>(null);
+  const materialRef = React.useRef<any>(null);
   
   const targetX = 0; // Always centered
   const targetZ = view === "HUB" ? 0 : view === "AI" ? -5 : isFiltering ? -15 : -5;
@@ -24,6 +24,13 @@ function GlassTorus({ view, isFiltering }: { view: "HUB" | "AI" | "MENU", isFilt
       mesh.current.rotation.x += delta * 0.2;
       mesh.current.rotation.y += delta * 0.3;
     }
+    
+    if (materialRef.current) {
+      const current = new THREE.Color(materialRef.current.color);
+      const target = new THREE.Color(themeColor);
+      current.lerp(target, delta * 2);
+      materialRef.current.color = current;
+    }
   });
 
   return (
@@ -31,6 +38,7 @@ function GlassTorus({ view, isFiltering }: { view: "HUB" | "AI" | "MENU", isFilt
       <mesh ref={mesh}>
         <torusKnotGeometry args={[1.5, 0.5, 256, 64]} />
         <MeshTransmissionMaterial 
+          ref={materialRef}
           backside thickness={1.5} roughness={0} transmission={1} ior={1.5}
           chromaticAberration={0.1} anisotropy={0.3} color="#f97316"
         />
@@ -39,15 +47,30 @@ function GlassTorus({ view, isFiltering }: { view: "HUB" | "AI" | "MENU", isFilt
   );
 }
 
-function MenuUniverse({ onFilteringChange }: { onFilteringChange: (isFiltering: boolean) => void }) {
+function MenuUniverse({ onFilteringChange, onThemeChange }: { onFilteringChange: (isFiltering: boolean) => void, onThemeChange: (color: string) => void }) {
   const groupRef = React.useRef<THREE.Group>(null);
   const [search, setSearch] = React.useState("");
+  const { playPop, playTink } = usePremiumSounds();
   const radius = 8;
 
   // Notify parent when search changes so we can move the Torus out of the way
   React.useEffect(() => {
     onFilteringChange(search.length > 0);
-  }, [search, onFilteringChange]);
+    
+    // Dynamic Mood Lighting
+    const s = search.toLowerCase();
+    if (s.includes("spice") || s.includes("chicken") || s.includes("tikka") || s.includes("rogan")) {
+      onThemeChange("#ef4444"); // Crimson Red
+    } else if (s.includes("veg") || s.includes("paneer") || s.includes("palak")) {
+      onThemeChange("#10b981"); // Emerald Green
+    } else if (s.includes("sweet") || s.includes("jamun") || s.includes("dessert") || s.includes("rasmalai")) {
+      onThemeChange("#8b5cf6"); // Purple
+    } else if (s.includes("water") || s.includes("drink") || s.includes("lassi")) {
+      onThemeChange("#3b82f6"); // Blue
+    } else {
+      onThemeChange("#f97316"); // Default Ember Orange
+    }
+  }, [search, onFilteringChange, onThemeChange]);
 
   useFrame((state, delta) => {
     if (groupRef.current && !search) {
@@ -67,11 +90,11 @@ function MenuUniverse({ onFilteringChange }: { onFilteringChange: (isFiltering: 
             <input 
               type="text" 
               value={search} 
-              onChange={e => setSearch(e.target.value)} 
+              onChange={e => { playTink(); setSearch(e.target.value); }} 
               placeholder="Search the universe..." 
               className="bg-transparent text-white text-xl outline-none w-full placeholder:text-white/30"
             />
-            {search && <X className="w-6 h-6 text-white/50 cursor-pointer hover:text-white" onClick={() => setSearch("")} />}
+            {search && <X className="w-6 h-6 text-white/50 cursor-pointer hover:text-white" onClick={() => { playTink(); setSearch(""); }} />}
           </div>
         </Html>
       </Float>
@@ -98,7 +121,10 @@ function MenuUniverse({ onFilteringChange }: { onFilteringChange: (isFiltering: 
                   </div>
                   <p className="text-xs text-white/50 leading-relaxed mb-4">{item.description}</p>
                   <button 
-                    onClick={() => window.dispatchEvent(new CustomEvent('add-to-cart', { detail: item }))}
+                    onClick={() => {
+                      playPop();
+                      window.dispatchEvent(new CustomEvent('add-to-cart', { detail: item }));
+                    }}
                     className="w-full py-3 rounded-xl bg-white/10 hover:bg-ember-accent text-white font-bold uppercase text-[10px] transition-colors"
                   >
                     Add to Cart
@@ -133,6 +159,7 @@ function CameraRig({ view }: { view: "HUB" | "AI" | "MENU" }) {
 export function Premium3DScene({ view }: { view: "HUB" | "AI" | "MENU" }) {
   const isInteractive = view === "MENU";
   const [isFilteringMenu, setIsFilteringMenu] = React.useState(false);
+  const [themeColor, setThemeColor] = React.useState("#f97316");
 
   return (
     <div className={`absolute inset-0 z-0 ${isInteractive ? "pointer-events-auto" : "pointer-events-none"}`}>
@@ -148,28 +175,23 @@ export function Premium3DScene({ view }: { view: "HUB" | "AI" | "MENU" }) {
           </>
         )}
         
-        {/* We removed the strict OrbitControls for AI view so the user doesn't get stuck */}
-
         <ambientLight intensity={0.5} />
-        <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={1} castShadow />
+        <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={1} castShadow color={themeColor} />
         
-        <GlassTorus view={view} isFiltering={isFilteringMenu} />
+        <GlassTorus view={view} isFiltering={isFilteringMenu} themeColor={themeColor} />
         
-        {view === "MENU" && <MenuUniverse onFilteringChange={setIsFilteringMenu} />}
+        {view === "MENU" && <MenuUniverse onFilteringChange={setIsFilteringMenu} onThemeChange={setThemeColor} />}
 
         <Environment resolution={256}>
           <group rotation={[-Math.PI / 3, 0, 1]}>
-            <Lightformer form="circle" intensity={4} rotation-x={Math.PI / 2} position={[0, 5, -9]} scale={2} />
-            <Lightformer form="circle" intensity={2} rotation-y={Math.PI / 2} position={[-5, 1, -1]} scale={2} />
-            <Lightformer form="circle" intensity={2} rotation-y={Math.PI / 2} position={[5, 1, -1]} scale={2} />
-            <Lightformer form="circle" intensity={2} rotation-y={-Math.PI / 2} position={[10, 1, 0]} scale={8} />
+            <Lightformer form="circle" intensity={4} rotation-x={Math.PI / 2} position={[0, 5, -9]} scale={2} color={themeColor} />
+            <Lightformer form="circle" intensity={2} rotation-y={Math.PI / 2} position={[-5, 1, -1]} scale={2} color={themeColor} />
+            <Lightformer form="circle" intensity={2} rotation-y={Math.PI / 2} position={[5, 1, -1]} scale={2} color={themeColor} />
+            <Lightformer form="circle" intensity={2} rotation-y={-Math.PI / 2} position={[10, 1, 0]} scale={8} color={themeColor} />
           </group>
         </Environment>
       </Canvas>
     </div>
   );
 }
-
-
-
 

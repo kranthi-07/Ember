@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import * as React from "react";
-import { Search, X, Utensils, ArrowLeft } from "lucide-react";
+import { Search, X, ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -297,6 +297,7 @@ export default function Home() {
     </main>
   );
 }
+
 
 
 

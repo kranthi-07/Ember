@@ -1,98 +1,76 @@
 import * as React from "react";
-import { MenuItem } from "@/types";
+import { Plus, Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Utensils, Plus } from "lucide-react";
+import { MenuItem } from "@/types";
 import { motion } from "framer-motion";
-import { QuantityControl } from "@/components/cart/quantity-control";
 
 interface FoodCardProps {
   item: MenuItem;
   quantity?: number;
   onAdd: (item: MenuItem) => void;
-  onIncrease?: (item: MenuItem) => void;
-  onDecrease?: (item: MenuItem) => void;
+  onIncrease: (item: MenuItem) => void;
+  onDecrease: (item: MenuItem) => void;
 }
 
 export function FoodCard({ item, quantity = 0, onAdd, onIncrease, onDecrease }: FoodCardProps) {
   return (
     <motion.div 
-      layout
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      whileHover={{ y: -4 }}
-      transition={{ duration: 0.3 }}
-      className="flex flex-col bg-ember-surface rounded-xl shadow-card overflow-hidden border border-ember-border group"
+      className="flex flex-col rounded-2xl bg-white/5 border border-white/10 hover:border-white/20 hover:bg-white/10 overflow-hidden transition-all shadow-xl group"
     >
-      {/* Image Area */}
-      <div className="relative h-48 w-full bg-black/5 flex items-center justify-center overflow-hidden">
-        {item.image ? (
+      {item.image && (
+        <div className="relative w-full h-40 overflow-hidden bg-black/20">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img 
             src={item.image} 
             alt={item.name} 
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
           />
-        ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center bg-ember-accent/5 text-ember-accent/40">
-            <Utensils className="w-12 h-12 mb-2 opacity-50" />
-            <span className="text-xs font-medium uppercase tracking-wider">{item.category}</span>
-          </div>
-        )}
-        
-        {/* Badges */}
-        <div className="absolute top-3 left-3 flex gap-2">
-          {item.vegetarian && (
-            <span className="bg-green-100 text-green-800 text-[10px] font-bold px-2 py-1 rounded shadow-sm">
-              VEG
-            </span>
-          )}
           {item.spicy && (
-            <span className="bg-red-100 text-red-800 text-[10px] font-bold px-2 py-1 rounded shadow-sm">
-              SPICY
-            </span>
+            <div className="absolute top-3 left-3 bg-red-500 text-white text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-sm shadow-md">
+              Spicy
+            </div>
           )}
         </div>
-      </div>
-
-      {/* Content Area */}
+      )}
       <div className="p-5 flex flex-col flex-1">
-        <div className="flex justify-between items-start mb-2">
-          <h3 className="font-serif text-lg font-bold text-foreground leading-tight">{item.name}</h3>
-          <span className="font-medium text-ember-accent">₹{item.price}</span>
+        <div className="flex justify-between items-start mb-2 gap-4">
+          <h3 className="font-serif text-lg font-medium text-white leading-tight">{item.name}</h3>
+          <span className="font-serif text-lg font-bold text-ember-accent">₹{item.price}</span>
         </div>
-        
-        <p className="text-sm text-ember-text-secondary line-clamp-2 mb-4 flex-1">
+        <p className="text-white/50 text-sm line-clamp-2 mb-4 leading-relaxed flex-1">
           {item.description}
         </p>
 
-        {/* Tags */}
-        <div className="flex flex-wrap gap-1.5 mb-5">
-          {item.tags.slice(0, 3).map(tag => (
-            <span key={tag} className="text-xs text-ember-text-secondary bg-black/5 px-2 py-1 rounded-md">
-              {tag}
-            </span>
-          ))}
-        </div>
-
-        {/* Action */}
-        <div className="h-10 w-full mt-auto">
-          {quantity > 0 && onIncrease && onDecrease ? (
-            <QuantityControl 
-              quantity={quantity} 
-              onIncrease={() => onIncrease(item)} 
-              onDecrease={() => onDecrease(item)} 
-            />
-          ) : (
+        {quantity === 0 ? (
+          <Button 
+            onClick={() => onAdd(item)}
+            className="w-full bg-white/10 hover:bg-ember-accent text-white border-0 transition-colors font-bold tracking-widest text-[10px] uppercase h-10"
+          >
+            Add to Order
+          </Button>
+        ) : (
+          <div className="flex items-center justify-between bg-black/40 border border-white/10 rounded-full h-10 px-1 overflow-hidden">
             <Button 
-              onClick={() => onAdd(item)}
-              className="w-full justify-between group-hover:bg-ember-accent group-hover:text-white transition-colors h-full"
-              variant="outline"
+              variant="ghost" 
+              size="icon" 
+              onClick={() => onDecrease(item)}
+              className="h-8 w-8 rounded-full hover:bg-white/10 text-white"
             >
-              <span>Add to order</span>
+              <Minus className="w-4 h-4" />
+            </Button>
+            <span className="font-bold text-white w-8 text-center">{quantity}</span>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => onIncrease(item)}
+              className="h-8 w-8 rounded-full hover:bg-white/10 text-white"
+            >
               <Plus className="w-4 h-4" />
             </Button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </motion.div>
   );
